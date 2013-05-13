@@ -14,11 +14,14 @@ Software:
 * Clone this repository:  
     git clone https://github.com/philsmd/hccap2cap.git  
 * Compile it:
-    gcc 
+    cd hccap2cap
+    gcc -o hccap2cap hccap2cap.c
 * Get a test hccap file (e.g):
     wget http://hashcat.net/misc/example_hashes/hashcat.hccap
 * Run it:  
     ./hccap2cap hashcat.hccap hashcat_converted.cap 
+* Check results:
+    wireshark hashcat_converted.cap
  
 # Hacking
 
@@ -29,6 +32,7 @@ Software:
 * all bug fixes are welcome
 * guaranty cross-plattformness
 * testing with huge set of hccap files
+* solve and remove the TODOs
 * and,and,and
 
 # Credits and Contributors 
