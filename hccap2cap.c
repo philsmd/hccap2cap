@@ -3,7 +3,7 @@
 //
 // License: belongs to the PUBLIC DOMAIN, donated to hashcat, credits MUST go to hashcat
 //          and philsmd for their hard work. Thx
-// Disclaimer: WE PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER 
+// Disclaimer: WE PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER
 //         EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 //         OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 //         Furthermore, NO GUARANTEES THAT IT WORKS FOR YOU AND WORKS CORRECTLY
@@ -63,7 +63,8 @@
 #define LSB (((union{unsigned x;unsigned char c;}){1}).c)   // check for little endian
 #define SWAP(x) swap_bytes(&x,sizeof(x));
 typedef long long time64_t;
-typedef struct{
+typedef struct
+{
     char essid[36];
     unsigned char bssid[6];
     unsigned char stmac[6];
@@ -73,8 +74,9 @@ typedef struct{
     int len_eapol;
     int key_ver;
     unsigned char key_mic[16];
-}hccap_struct;
-typedef struct{
+} hccap_struct;
+typedef struct
+{
     unsigned int magic;
     unsigned short version_major;
     unsigned short version_minor;
@@ -82,8 +84,9 @@ typedef struct{
     unsigned int sigfigs;
     unsigned int snaplen;
     unsigned int linktype;
-}cap_header_struct;
-typedef struct{
+} cap_header_struct;
+typedef struct
+{
     int tv_sec;
     int tv_usec;
     unsigned int len_cap;
@@ -94,22 +97,25 @@ typedef struct{
     unsigned char src[6];
     unsigned char bssid[6];
     unsigned char seq_ctrl[2];  // sequence control (sequence number+fragment number)
-}packet_header;
-struct tagged_node{
+} packet_header;
+struct tagged_node
+{
     unsigned char num;
     unsigned char len;
     unsigned char*data;
     struct tagged_node*next;
 };
 typedef struct tagged_node tagged_param;
-typedef struct{
+typedef struct
+{
     packet_header header;
     long timestamp;             // 64 bits
     short interval;
     short cap;  // capabilities
     tagged_param*tags;
-}broadcast_struct;
-typedef struct{
+} broadcast_struct;
+typedef struct
+{
     unsigned char tid;
     unsigned char qap_txop;
     unsigned char dsap;
@@ -121,8 +127,9 @@ typedef struct{
     char auth_type;
     short len;
     unsigned char descriptor_type;
-}packet_info;
-typedef struct{
+} packet_info;
+typedef struct
+{
     short info;
     short len;
     unsigned char replay_counter[8];
@@ -132,47 +139,57 @@ typedef struct{
     unsigned char id[8];
     unsigned char mic[16];
     short len_data;
-}packet_info_key;
-typedef struct{
+} packet_info_key;
+typedef struct
+{
     packet_header header;
-    packet_info info;    
-    packet_info_key info_key;    
-    tagged_param*data;    
-}packet_struct;
+    packet_info info;
+    packet_info_key info_key;
+    tagged_param*data;
+} packet_struct;
 
-void usage(char*prog_name) {
+void usage(char*prog_name)
+{
     printf("Usage: %s <in.hccap> <out.cap>\n",prog_name);
 }
-void swap_bytes(void*pv,size_t n) {
-    if (LSB) {
+void swap_bytes(void*pv,size_t n)
+{
+    if (LSB)
+    {
         char*ptr=pv,tmp;
         size_t low,high;
-        for (low=0,high=n-1;high>low;low++,high--) {
+        for (low=0,high=n-1; high>low; low++,high--)
+        {
             tmp=ptr[low];
             ptr[low]=ptr[high];
             ptr[high]=tmp;
         }
     }
 }
-int main(int argc,char**argv) {
+int main(int argc,char**argv)
+{
     FILE*hccap_file,*cap_file;
-    if (argc<2) {
+    if (argc<2)
+    {
         fprintf(stderr,"[-] Please specify the input .hccap file\n");
         usage(argv[0]);
         return 1;
     }
     hccap_file=fopen(argv[1],"rb");
-    if (!hccap_file) {
+    if (!hccap_file)
+    {
         fprintf(stderr,"[-] Could not open .hccap file\n");
         return 1;
     }
-    if (argc<3) {
+    if (argc<3)
+    {
         fprintf(stderr,"[-] Please specify the output .cap file\n");
         usage(argv[0]);
         return 1;
     }
     cap_file=fopen(argv[2],"wb");
-    if (!cap_file) {
+    if (!cap_file)
+    {
         fprintf(stderr,"[-] Could not open .cap file\n");
         return 1;
     }
@@ -180,7 +197,8 @@ int main(int argc,char**argv) {
     long size_hccap_file;
     fseek(hccap_file,0,SEEK_END);
     size_hccap_file=ftell(hccap_file);
-    if (size_hccap_file!=sizeof(hccap_struct)) {
+    if (size_hccap_file!=sizeof(hccap_struct))
+    {
         fprintf(stderr,"[-] .hccap file seems to be *not* valid\n");
         return 1;
     }
@@ -213,7 +231,8 @@ int main(int argc,char**argv) {
     cap_hdr.snaplen=DEFAULT_SNAP_LEN;
     cap_hdr.linktype=IEEE802_11;
     // write the cap header to file
-    if (!fwrite(&cap_hdr,sizeof(cap_hdr),1,cap_file)) {
+    if (!fwrite(&cap_hdr,sizeof(cap_hdr),1,cap_file))
+    {
         fprintf(stderr,"[-] Failed to write to .cap file\n");
         return 1;
     }
@@ -236,32 +255,38 @@ int main(int argc,char**argv) {
     unsigned char wmmwme[WMMWME_START_LEN+sizeof(DEFAULT_WMMWME_END)];
     memcpy(wmmwme,vendor_data,WMMWME_START_LEN);
     memcpy(wmmwme+WMMWME_START_LEN,DEFAULT_WMMWME_END,sizeof(DEFAULT_WMMWME_END)-1);
-    tagged_param tag_wmmwme={TAG_NUM_VENDOR_SPEC,(sizeof(wmmwme)-1)/sizeof(char),
-        wmmwme,NULL};
+    tagged_param tag_wmmwme= {TAG_NUM_VENDOR_SPEC,(sizeof(wmmwme)-1)/sizeof(char),
+                              wmmwme,NULL
+                             };
     // we need to allocate some memory first
     unsigned char wpa_info[hccap.eapol[100]+sizeof(DEFAULT_WPAINFO_END)];
     memcpy(wpa_info,vendor_data,hccap.eapol[100]);
     memcpy(wpa_info+hccap.eapol[100],DEFAULT_WPAINFO_END,sizeof(DEFAULT_WPAINFO_END)-1);
-    tagged_param tag_wpainfo={TAG_NUM_VENDOR_SPEC,sizeof(wpa_info)-1/sizeof(char),
-        wpa_info,&tag_wmmwme};
-    tagged_param tag_vendor={TAG_NUM_VENDOR_SPEC,(sizeof(DEFAULT_VENDOR_TAG)-1)/sizeof(char),
-        DEFAULT_VENDOR_TAG,&tag_wpainfo};
-    tagged_param tag_ext_rates={TAG_NUM_EXT_RATES,(sizeof(DEFAULT_EXT_RATES)-1)/sizeof(char),
-        DEFAULT_EXT_RATES,&tag_vendor};
-    tagged_param tag_erp2={TAG_NUM_ERP2,1,DEFAULT_ERP,&tag_ext_rates};
-    tagged_param tag_erp1={TAG_NUM_ERP1,1,DEFAULT_ERP,&tag_erp2};
-    tagged_param tag_tim={TAG_NUM_TIM,(sizeof(DEFAULT_TIM)-1)/sizeof(char),DEFAULT_TIM,&tag_erp1};
+    tagged_param tag_wpainfo= {TAG_NUM_VENDOR_SPEC,sizeof(wpa_info)-1/sizeof(char),
+                               wpa_info,&tag_wmmwme
+                              };
+    tagged_param tag_vendor= {TAG_NUM_VENDOR_SPEC,(sizeof(DEFAULT_VENDOR_TAG)-1)/sizeof(char),
+                              DEFAULT_VENDOR_TAG,&tag_wpainfo
+                             };
+    tagged_param tag_ext_rates= {TAG_NUM_EXT_RATES,(sizeof(DEFAULT_EXT_RATES)-1)/sizeof(char),
+                                 DEFAULT_EXT_RATES,&tag_vendor
+                                };
+    tagged_param tag_erp2= {TAG_NUM_ERP2,1,DEFAULT_ERP,&tag_ext_rates};
+    tagged_param tag_erp1= {TAG_NUM_ERP1,1,DEFAULT_ERP,&tag_erp2};
+    tagged_param tag_tim= {TAG_NUM_TIM,(sizeof(DEFAULT_TIM)-1)/sizeof(char),DEFAULT_TIM,&tag_erp1};
     // ... traffic indication map
-    tagged_param tag_cur_channel={TAG_NUM_CHANNEL,1,DEFAULT_CHANNEL,&tag_tim};
-    tagged_param tag_rates={TAG_NUM_RATES,(sizeof(DEFAULT_RATES)-1)/sizeof(char),DEFAULT_RATES,
-        &tag_cur_channel};
-    tagged_param tag_ssid={TAG_NUM_SSID,strlen(hccap.essid),hccap.essid,&tag_rates};
+    tagged_param tag_cur_channel= {TAG_NUM_CHANNEL,1,DEFAULT_CHANNEL,&tag_tim};
+    tagged_param tag_rates= {TAG_NUM_RATES,(sizeof(DEFAULT_RATES)-1)/sizeof(char),DEFAULT_RATES,
+                             &tag_cur_channel
+                            };
+    tagged_param tag_ssid= {TAG_NUM_SSID,strlen(hccap.essid),hccap.essid,&tag_rates};
     packet_broadcast.tags=&tag_ssid;
     tagged_param*tag_pointer=packet_broadcast.tags;
     // its header
     int msg_size=sizeof(packet_broadcast.header)+sizeof(packet_broadcast.timestamp)+
-        sizeof(packet_broadcast.interval)+sizeof(packet_broadcast.cap)-DEFAULT_HEADER_LEN;
-    while (tag_pointer!=NULL) {
+                 sizeof(packet_broadcast.interval)+sizeof(packet_broadcast.cap)-DEFAULT_HEADER_LEN;
+    while (tag_pointer!=NULL)
+    {
         msg_size+=sizeof(tag_pointer->num)+sizeof(tag_pointer->len)+tag_pointer->len;
         tag_pointer=tag_pointer->next;
     }
@@ -280,15 +305,18 @@ int main(int argc,char**argv) {
     if (!fwrite(&packet_broadcast.header,sizeof(packet_broadcast.header),1,cap_file)||
             !fwrite(&packet_broadcast.timestamp,sizeof(packet_broadcast.timestamp),1,cap_file)||
             !fwrite(&packet_broadcast.interval,sizeof(packet_broadcast.interval),1,cap_file)||
-            !fwrite(&packet_broadcast.cap,sizeof(packet_broadcast.cap),1,cap_file)) {
+            !fwrite(&packet_broadcast.cap,sizeof(packet_broadcast.cap),1,cap_file))
+    {
         fprintf(stderr,"[-] ERROR while writing broadcast header to .cap file\n");
         return 1;
     }
     // OUTPUT tagged parameters of the broadcast packet
-    while (tag_pointer!=NULL) {
+    while (tag_pointer!=NULL)
+    {
         if (!fwrite(&tag_pointer->num,sizeof(tag_pointer->num),1,cap_file)||
                 !fwrite(&tag_pointer->len,sizeof(tag_pointer->len),1,cap_file)||
-                !fwrite(tag_pointer->data,tag_pointer->len,1,cap_file)) {
+                !fwrite(tag_pointer->data,tag_pointer->len,1,cap_file))
+        {
             fprintf(stderr,"[-] ERROR while writing broadcast tags to .cap file\n");
             return 1;
         }
@@ -316,7 +344,7 @@ int main(int argc,char**argv) {
     packet_request_info_key.len=DEFAULT_KEY_LENGTH;
     SWAP(packet_request_info_key.len);
     memcpy(&packet_request_info_key.replay_counter,hccap.eapol+9,
-        sizeof(packet_request_info_key.replay_counter));
+           sizeof(packet_request_info_key.replay_counter));
     memcpy(&packet_request_info_key.nonce,hccap.anonce,sizeof(packet_request_info_key.nonce));
     // ... set ANONCE (...rest of request is zero'ed)
     // the broadcast packet
@@ -333,18 +361,19 @@ int main(int argc,char**argv) {
     memcpy(&packet_request_hdr.src,hccap.bssid,sizeof(packet_request_hdr.src));
     memcpy(&packet_request_hdr.bssid,hccap.bssid,sizeof(packet_request_hdr.bssid));
     msg_size=sizeof(packet_request_hdr)+(sizeof(packet_request.info)-1)+
-        sizeof(packet_request.info_key)-DEFAULT_HEADER_LEN;
+             sizeof(packet_request.info_key)-DEFAULT_HEADER_LEN;
     packet_request_hdr.len_cap=packet_request_hdr.len=msg_size;
     // assign header to request message
     packet_request.header=packet_request_hdr;
     // OUTPUT the broadcast packet header
     if (!fwrite(&packet_request.header,sizeof(packet_request.header),1,cap_file)||
             !fwrite(&packet_request.info,sizeof(packet_request.info)-1,1,cap_file)||
-            !fwrite(&packet_request.info_key,sizeof(packet_request.info_key),1,cap_file)) {
+            !fwrite(&packet_request.info_key,sizeof(packet_request.info_key),1,cap_file))
+    {
         fprintf(stderr,"[-] ERROR while writing request to .cap file\n");
         return 1;
     }
-    // REPLY 
+    // REPLY
     // packet info
     packet_info packet_reply_info;
     memset(&packet_reply_info,0,sizeof(packet_reply_info));
@@ -367,7 +396,7 @@ int main(int argc,char**argv) {
     // ... note: this value ^ should be same as DEFAULT_KEY_LENGTH
     SWAP(packet_reply_info_key.len);
     memcpy(&packet_reply_info_key.replay_counter,hccap.eapol+9,
-        sizeof(packet_reply_info_key.replay_counter));
+           sizeof(packet_reply_info_key.replay_counter));
     memcpy(&packet_reply_info_key.nonce,hccap.snonce,sizeof(packet_reply_info_key.nonce));
     // ... set SNONCE
     memcpy(&packet_reply_info_key.mic,hccap.key_mic,sizeof(packet_reply_info_key.mic));
@@ -376,7 +405,7 @@ int main(int argc,char**argv) {
     // maybe we need (sometimes) to set also following fields: iv,rsc,id
     // ... if so it is a TODO
     // packet data
-    tagged_param packet_reply_data={hccap.eapol[99],hccap.eapol[100],vendor_data,NULL};
+    tagged_param packet_reply_data= {hccap.eapol[99],hccap.eapol[100],vendor_data,NULL};
     // the broadcast packet
     packet_struct packet_reply;
     memset(&packet_reply,0,sizeof(packet_reply));
@@ -387,8 +416,8 @@ int main(int argc,char**argv) {
     packet_header packet_reply_hdr;
     memset(&packet_reply_hdr,0,sizeof(packet_reply_hdr));
     msg_size=sizeof(packet_reply.header)+(sizeof(packet_reply.info)-1)+
-        sizeof(packet_reply.info_key)+sizeof(packet_reply.data->num)+
-        sizeof(packet_reply.data->len)+packet_reply.data->len-DEFAULT_HEADER_LEN;
+             sizeof(packet_reply.info_key)+sizeof(packet_reply.data->num)+
+             sizeof(packet_reply.data->len)+packet_reply.data->len-DEFAULT_HEADER_LEN;
     packet_reply_hdr.len_cap=packet_reply_hdr.len=msg_size;
     packet_reply_hdr.frame_ctrl=REPLY_FRAME_CTRL;
     packet_reply_hdr.duration=DEFAULT_DURATION;
@@ -403,7 +432,8 @@ int main(int argc,char**argv) {
             !fwrite(&packet_reply.info_key,sizeof(packet_reply.info_key),1,cap_file)||
             !fwrite(&(packet_reply.data)->num,sizeof(packet_reply.data->num),1,cap_file)||
             !fwrite(&(packet_reply.data)->len,sizeof(packet_reply.data->len),1,cap_file)||
-            !fwrite((packet_reply.data)->data,packet_reply.data->len,1,cap_file)) {
+            !fwrite((packet_reply.data)->data,packet_reply.data->len,1,cap_file))
+    {
         fprintf(stderr,"[-] ERROR while writing reply to .cap file\n");
         return 1;
     }
