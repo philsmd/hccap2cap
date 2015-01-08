@@ -13,10 +13,10 @@ Software:
 
 * Clone this repository:  
     git clone https://github.com/philsmd/hccap2cap.git  
-* Compile it:
-    cd hccap2cap
+* Compile it:  
+    cd hccap2cap  
     gcc -o hccap2cap hccap2cap.c
-* Get a test hccap file (e.g):
+* Get a test hccap file (e.g):  
     wget http://hashcat.net/misc/example_hashes/hashcat.hccap
 * Run it:  
     ./hccap2cap hashcat.hccap hashcat_converted.cap 
