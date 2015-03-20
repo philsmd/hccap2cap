@@ -370,6 +370,7 @@ int main (int argc, char **argv)
     }
 
     // OUTPUT tagged parameters of the broadcast packet
+
     while (tag_pointer != NULL)
     {
       if (!fwrite (&tag_pointer->num, sizeof (tag_pointer->num), 1, cap_file) ||
@@ -446,7 +447,8 @@ int main (int argc, char **argv)
     // assign header to request message
     packet_request.header = packet_request_hdr;
 
-    // OUTPUT the broadcast packet header
+    // OUTPUT the full REQUEST
+
     if (!fwrite (&packet_request.header, sizeof (packet_request.header), 1, cap_file) ||
         !fwrite (&packet_request.info, sizeof (packet_request.info)-1, 1, cap_file) ||
         !fwrite (&packet_request.info_key, sizeof (packet_request.info_key), 1, cap_file))
@@ -530,7 +532,7 @@ int main (int argc, char **argv)
 
     packet_reply.header = packet_reply_hdr;
 
-    // OUTPUT the broadcast packet header
+    // OUTPUT the full REPLY
 
     if (!fwrite (&packet_reply.header, sizeof (packet_reply.header), 1, cap_file) ||
         !fwrite (&packet_reply.info, sizeof (packet_reply.info) - 1, 1, cap_file) ||
